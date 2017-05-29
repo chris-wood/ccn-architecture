@@ -1,4 +1,4 @@
-\documentclass[12pt]{report}
+\documentclass[12pt]{article}
 \usepackage[a4paper]{geometry}
 \usepackage[myheadings]{fullpage}
 \usepackage{fancyhdr}
@@ -909,42 +909,58 @@ This section defines the InterestReturn ReturnCode introduced in this
 RFC.  The numeric values used in the packet are defined in
 [CCNMessages].
 
-+----------------------+--------------------------------------------+
-| Name                 | Description                                |
-+----------------------+--------------------------------------------+
-| No Route (Section    | The returning Forwarder has no route to    |
-| 10.3.1)              | the Interest name.                         |
-|                      |                                            |
-| HopLimit Exceeded    | The HopLimit has decremented to 0 and need |
-| (Section 10.3.2)     | to forward the packet.                     |
-|                      |                                            |
-| Interest MTU too     | The Interest's MTU does not conform to the |
-| large (Section       | required minimum and would require         |
-| 10.3.3)              | fragmentation.                             |
-|                      |                                            |
-| No Resources         | The node does not have the resources to    |
-| (Section 10.3.4)     | process the Interest.                      |
-|                      |                                            |
-| Path error (Section  | There was a transmission error when        |
-| 10.3.5)              | forwarding the Interest along a route (a   |
-|                      | transient error).                          |
-|                      |                                            |
-| Prohibited (Section  | An administrative setting prohibits        |
-| 10.3.6)              | processing this Interest.                  |
-|                      |                                            |
-| Congestion (Section  | The Interest was dropped due to congestion |
-| 10.3.7)              | (a transient error).                       |
-|                      |                                            |
-| Unsupported Content  | The Interest was dropped because it        |
-| Object Hash          | requested a Content Object Hash            |
-| Algorithm (Section   | Restriction using a hash algorithm that    |
-| 10.3.8)              | cannot be computed.                        |
-|                      |                                            |
-| Malformed Interest   | The Interest was dropped because it did    |
-| (Section 10.3.9)     | not correctly parse.                       |
-+----------------------+--------------------------------------------+
+\begin{table}[t!]
+\center
+\begin{tabular}{|p{5cm}|p{9cm}|} \hline
+{\bf Name} & {\bf Description} \\ \hline
+No Route & The returning Forwarder has no route to the Interest name. \\
+HopLimit Exceeded & The HopLimit has decremented to 0 and need to forward the packet. \\
+Interest MTU too large & The Interest's MTU does not conform to the require minimum and would require fragmentation. \\
+No Resources & The node does not have the resources to process the Interest. \\
+Path error & There was a transmission error when forwarding the Interest along a route (a transient error). \\
+Prohibited & An administrative setting prohibits processing this Interest. \\
+Congestion & The Interest was dropped due to congestion (a transient error). \\
+Unsupported Content Object Hash Algorithm & The Interest was dropped because it requested a Content Object Hash Restriction using a hash algorithm that cannot be computed. \\
+Malformed Interest & The Interest was dropped beause it did not correctly parse. \\ \hline
+\end{tabular}
+\end{table}
 
-                Table 3: Interest Return Reason Codes
+% +----------------------+--------------------------------------------+
+% | Name                 | Description                                |
+% +----------------------+--------------------------------------------+
+% | No Route (Section    | The returning Forwarder has no route to    |
+% | 10.3.1)              | the Interest name.                         |
+% |                      |                                            |
+% | HopLimit Exceeded    | The HopLimit has decremented to 0 and need |
+% | (Section 10.3.2)     | to forward the packet.                     |
+% |                      |                                            |
+% | Interest MTU too     | The Interest's MTU does not conform to the |
+% | large (Section       | required minimum and would require         |
+% | 10.3.3)              | fragmentation.                             |
+% |                      |                                            |
+% | No Resources         | The node does not have the resources to    |
+% | (Section 10.3.4)     | process the Interest.                      |
+% |                      |                                            |
+% | Path error (Section  | There was a transmission error when        |
+% | 10.3.5)              | forwarding the Interest along a route (a   |
+% |                      | transient error).                          |
+% |                      |                                            |
+% | Prohibited (Section  | An administrative setting prohibits        |
+% | 10.3.6)              | processing this Interest.                  |
+% |                      |                                            |
+% | Congestion (Section  | The Interest was dropped due to congestion |
+% | 10.3.7)              | (a transient error).                       |
+% |                      |                                            |
+% | Unsupported Content  | The Interest was dropped because it        |
+% | Object Hash          | requested a Content Object Hash            |
+% | Algorithm (Section   | Restriction using a hash algorithm that    |
+% | 10.3.8)              | cannot be computed.                        |
+% |                      |                                            |
+% | Malformed Interest   | The Interest was dropped because it did    |
+% | (Section 10.3.9)     | not correctly parse.                       |
+% +----------------------+--------------------------------------------+
+%
+%                 Table 3: Interest Return Reason Codes
 
 \subsection{Interest Return Protocol}
 This section describes the Forwarder behavior for the various Reason
