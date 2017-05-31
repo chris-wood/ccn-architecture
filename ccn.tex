@@ -35,7 +35,7 @@
 
 \title{ \LARGE \textbf{Content-Centric Networking}
         \HRule{2pt} \\ [0.5cm]
-        \large Architectural Overview, Protocol Description, and Packet Format}
+        \large Architectural Overview and Protocol Description}
 
 \date{\today \\ Version: 1.0}
 
@@ -80,21 +80,21 @@ is a "named payload".  This is different from other systems that use
 only self-certifying names, where the payload name is intrinsically
 derivable from the payload or its realization in a network object
 (e.g., a SHA-256 hash of the payload or network object).  In human-
-readable form, we represent names as a "ccnx:" [CCNxURI] scheme URI
-[RFC3986], though the canonical encoding should be octet strings.  In
+readable form, we represent names as a "ccnx:" scheme URI
+\cite{berners2014rfc}, though the canonical encoding should be octet strings.  In
 this respect, we speak of a name being made up of hierarchical path
 segments, which is the URI terminology.
 
 This document only defines the general properties of CCNx names.  In
 some isolated environments, CCNx users may be able to use any name
 they choose and either inject that name (or prefix) into a routing
-protocol or use other information foraging techniques.  In the
+protocol or use other information foraging techniques. In the
 Internet environment, there will be policies around the formats of
 names and assignments of names to publishers, though those are not
 specified here.
 
 The key concept of CCNx is that a subjective name is
-(cryptographically) bound to a fixed payload.  These (publisher-
+(cryptographically) bound to a fixed payload. These (publisher-
 generated) bindings can therefore be (cryptographically) verified.
 For example, a publisher could compute a cryptographic hash over the
 name and payload, sign the hash, and deliver the tuple {Name,
@@ -117,22 +117,25 @@ application data, a cryptographic key, etc.) or cache control
 directives, etc.  We will call this extra signaling information
 ExtraFields.
 
-A named payload is thus the tuple {{Name, ExtraFields, Payload,
-ValidationAlgorithm}, ValidationPayload}, where all fields in the
-inner tuple are covered by the validation algorithm.
+A named payload is thus the tuple
+
+$$
+((Name, ExtraFields, Payload, ValidationAlgorithm), ValidationPayload),
+$$
+where all fields in the inner tuple are covered by the validation algorithm.
 
 CCNx specifies a network protocol around Interests (request messages)
-and Content Objects (response messages) to move named payloads.  An
+and Content Objects (response messages) to move named payloads. An
 Interest includes the Name -- which identifies the desired response
 -- and two optional limiting restrictions.  The first restriction on
 the KeyId to limit responses to those signed with a
-ValidationAlgorithm KeyId field equal to the restriction.  The second
+ValidationAlgorithm KeyId field equal to the restriction. The second
 is the ContentObjectHash restriction, which limits the response to
 one where the cryptographic hash of the entire named payload is equal
 to the restriction.
 
 The hierarchy of a CCNx Name is used for routing via the longest
-matching prefix in a Forwarder.  The longest matching prefix is
+matching prefix in a Forwarder. The longest matching prefix is
 computed name segment by name segment in the hierarchical path name,
 where each name segment must be exactly equal to match.  There is no
 requirement that the prefix be globally routable.  Within a
@@ -140,9 +143,9 @@ deployment any local routing may be used, even one that only uses a
 single flat (non-hierarchical) name segment.
 
 Another concept of CCNx is that there should be flow balance between
-Interest messages and Content Object messages.  At the network level,
+Interest messages and Content Object messages. At the network level,
 an Interest traveling along a single path should elicit no more than
-one Content Object response.  If some node sends the Interest along
+one Content Object response. If some node sends the Interest along
 more than one path, that node should consolidate the responses such
 that only one Content Object flows back towards the requester.  If an
 Interest is sent broadcast or multicast on a multiple-access media,
@@ -156,11 +159,11 @@ that a Content Object response can trace its way back to the original
 requester(s) without the requester needing to include a routable
 return address.  We use the notional Pending Interest Table (PIT) as
 a method to store state that facilitates the return of a Content
-Object.  The PIT table is not mandated by the specification.
+Object. The PIT table is not mandated by the specification.
 
 The notional PIT table stores the last hop of an Interest plus its
 Name and optional restrictions.  This is the data required to match a
-Content Object to an Interest (see Section 9).  When a Content Object
+Content Object to an Interest (see Section \ref{sec:matching}).  When a Content Object
 arrives, it must be matched against the PIT to determine which
 entries it satisfies.  For each such entry, at most one copy of the
 Content Object is sent to each listed last hop in the PIT entries.
@@ -205,7 +208,7 @@ Interest and a response is called a ContentObject.  CCNx also uses a
 called CCNx Messages.
 
 \subsection{Message Grammar}
-The CCNx message ABNF [RFC5234] grammar is show in Figure 1.  The
+The CCNx message ABNF \cite{overell2008augmented} grammar is show in Figure 1.  The
 grammar does not include any encoding delimiters, such as TLVs.
 Specific wire encodings are given in a separate document.  If a
 Validation section exists, the Validation Algorithm covers from the
@@ -328,8 +331,13 @@ SigTime       := AbsTime
 \end{figure}
 
 \subsection{Consumer Behavior}
-To request a piece of content for a given {Name, [KeyIdRest],
-[ObjHashRestr]} tuple, a consumer creates an Interest message with
+To request a piece of content for a given
+
+$$
+(Name, [KeyIdRest], [ObjHashRestr])
+$$
+
+tuple, a consumer creates an Interest message with
 those values.  It MAY add a validation section, typically only a
 CRC32C.  A consumer MAY put a Payload field in an Interest to send
 additional data to the producer beyond what is in the Name.  The Name
@@ -396,7 +404,7 @@ consumer will receive a ContentObject.  The consumer SHOULD:
       trustworthiness of the signing key to the namespace.  Such an
       assertion is beyond the scope of this document, though one may use
       traditional PKI methods, a trusted key resolution service, or
-      methods like [schematized trust].
+      methods like schematized trust \cite{yu2015schematizing}.
 
 \item It MAY cache the content object for future use, up to the
       ExpiryTime if present.
@@ -666,7 +674,8 @@ value) for equality.  The Forwarder matches paths segment-by-segment
 against its forwarding table to determine a next hop.
 
 \subsection{Name Examples}
-This section uses the CCNx URI [CCNxURI] representation of CCNx names.
+This section uses a URI representation of CCNx names. Each component of a name has
+a type and value. Examples of this encoding are in Table \ref{tab:names}.
 
 \begin{table}[t!]
 \center
@@ -677,6 +686,7 @@ ccnx:/ & A 0-length name, corresponds to a default route. \\
 ccnx:/NAME= & A name with 1 segment of 0 length, distinct from ccnx:/. \\
 ccnx:/NAME=foo/APP:0=bar & A 2-segment name, where the first segment is of type NAME and the second segment is of type APP:0. \\ \hline
 \end{tabular}
+\label{tab:names}
 \end{table}
 
 \subsection{Interest Payload ID}
@@ -741,7 +751,12 @@ when crossing a trust boundary.
 \todo[inline]{Write me.}
 
 \section{Link}
-A Link is the tuple {Name, [KeyIdRestr], [ContentObjectHashRestr]}.
+A Link is the tuple
+
+$$
+{Name, [KeyIdRestr], [ContentObjectHashRestr]}.
+$$
+
 The information in a Link comprises the fields the fields of an
 Interest which would retrieve the Link target.  A Content Object with
 PayloadType = "Link" is an object whose payload is one or more Links.
@@ -760,7 +775,7 @@ implementation support hash agility.
 
 In this document, we suggest certain hashes (e.g., SHA-256), but a
 specific implementation may use what it deems best.  The normative
-CCNx Messages [CCNMessages] specification should be taken as the
+CCNx Messages \cite{messages} specification should be taken as the
 definition of acceptable hash functions and uses.
 
 \section{Validation}
@@ -802,7 +817,7 @@ certificate whose public key must match the target KeyLocator's key.
 It must be issued by a trusted authority, preferably specifying the
 valid namespace of the key in the distinguished name.
 
-\section{Interest to Data Matching}
+\section{Interest to Content Matching} \label{sec:matching}
 A Content Object satisfies an Interest if and only if (a) the Content
 Object name, if present, exactly matches the Interest name, and (b)
 the ValidationAlgorithm KeyId of the Content Object exactly equals
@@ -811,13 +826,11 @@ ContentObjectHash exactly equals the Interest
 ContentObjectHashRestriction, if present.
 
 The matching rules are given by this predicate, which if it evaluates
-true means the ContentObject matches the Interest.  Ni = Name in
-Interest (may not be empty), Ki = KeyIdRestriction in the interest
-(may be empty), Hi = ContentObjectHashRestriction in Interest (may be
-empty).  Likewise, No, Ko, Ho are those properties in the
-ContentObject, where No and Ko may be empty; Ho always exists.  For
-binary relations, we use \& for AND and | for OR.  We use E for the
-EXISTS (not empty) operator and ! for the NOT EXISTS operator.
+true means the ContentObject matches the Interest.  $N_i$ = Name in
+Interest (may not be empty), $K_i$ = KeyIdRestriction in the interest
+(may be empty), $H_i$ = ContentObjectHashRestriction in Interest (may be
+empty).  Likewise, $N_o$, $K_o$, $H_o$ are those properties in the
+ContentObject, where $N_o$ and $K_o$ may be empty; $H_o$ always exists.
 
 As a special case, if the ContentObjectHashRestriction in the
 Interest specifies an unsupported hash algorithm, then no
@@ -829,7 +842,9 @@ behavior of having a different system calculate the hash for it, then
 the system may assume all hash functions are supported and leave it
 to the other system to accept or reject the Interest.
 
-% (!No | (Ni=No)) \& (!Ki | (Ki=Ko)) \& (!Hi | (Hi=Ho)) & (E No | E Hi)
+$$
+(\neg N_o \lor (N_i=N_o)) \land (\neg K_i \lor (K_i=K_o)) \land (\neg H_i \lor (H_i=H_o)) \land (\exists N_o \lor \exists H_i)
+$$
 
 As one can see, there are two types of attributes one can match.  The
 first term depends on the existence of the attribute in the
@@ -869,8 +884,7 @@ two ways:
    reason for the return
 \end{itemize}
 
-The specific encodings of the Interest Return are specified in
-[CCNMessages].
+The specific encodings of the Interest Return are specified in \cite{messages}.
 
 A Forwarder is not required to send any Interest Return messages.
 
@@ -893,12 +907,12 @@ message with the exception of the two modifications mentioned above.
 The PacketType is set to indicate the message is an InterestReturn
 and the reserved byte in the Interest header is used as a Return
 Code.  The numeric values for the PacketType and ReturnCodes are in
-[CCNMessages].
+\cite{messages}.
 
 \subsection{ReturnCode Types}
 This section defines the InterestReturn ReturnCode introduced in this
 RFC.  The numeric values used in the packet are defined in
-[CCNMessages].
+\cite{messages}.
 
 \begin{table}[t!]
 \center
@@ -1012,7 +1026,6 @@ correct the configuration.  A forwarder could suppress using that
 next hop for some period of time.
 
 \subsubsection{HopLimit Exceeded}
-
 A Forwarder MAY choose to send HopLimit Exceeded messages when it
 receives an Interest that must be forwarded off system and the
 HopLimit is 0.
@@ -1023,12 +1036,12 @@ minimum, it MAY send an "Interest MTU Too Large" message, or it may
 silently discard the Interest.
 
 If a Forwarder receives an "Interest MTU Too Large" is SHOULD NOT try
-alternate paths.  It SHOULD propagate the Interest Return to its
+alternate paths. It SHOULD propagate the Interest Return to its
 previous hops.
 
 \subsubsection{No Resources}
 If a Forwarder receives an Interest and it cannot process the
-Interest due to lack of resources, it MAY send an InterestReturn.  A
+Interest due to lack of resources, it MAY send an InterestReturn. A
 lack of resources could be the PIT table is too large, or some other
 capacity limit.
 
