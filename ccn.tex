@@ -13,7 +13,6 @@
 \usepackage{todonotes}
 \usepackage{url, lipsum}
 
-
 \newcommand{\HRule}[1]{\rule{\linewidth}{#1}}
 \onehalfspacing
 \setcounter{tocdepth}{5}
@@ -36,7 +35,7 @@
 
 \title{ \LARGE \textbf{Content-Centric Networking}
         \HRule{2pt} \\ [0.5cm]
-        \large Architectural Overview, Protocol, and Packet Format}
+        \large Architectural Overview, Protocol Description, and Packet Format}
 
 \date{\today \\ Version: 1.0}
 
@@ -282,6 +281,8 @@ The various fields -- in alphabetical order -- are defined as:
    mandate a specific HashType.
 \end{itemize}
 
+\begin{figure}
+\begin{verbatim}
 Message       := Interest / ContentObject / InterestReturn
 Interest      := HopLimit [Lifetime] BodyName [Validation]
 ContentObject := [CacheTime / ConObjHash] BodyOptName [Validation]
@@ -305,7 +306,6 @@ AbsTime       := 8 OCTET ; 64-bit UTC msec since epoch
 CacheTime     := AbsTime
 ConObjField   := ExpiryTime / PayloadType
 ConObjHash    := Hash ; The Content Object Hash
-DataType      := "1"
 ExpiryTime    := AbsTime
 Field         := InterestField / ConObjField
 Hash          := HashType 1* OCTET
@@ -315,10 +315,8 @@ InterestField := KeyIdRestr / ObjHashRestr
 KeyId         := 1* OCTET ; key identifier
 KeyIdRestr    := 1* OCTET
 KeyLink       := Link
-KeyType       := "2"
 Lifetime      := RelTime
 Link          := Name [KeyIdResr] [ObjHashRestr]
-LinkType      := "3"
 ObjHashRestr  := Hash
 Payload       := *OCTET
 PayloadType   := DataType / KeyType / LinkType
@@ -326,6 +324,8 @@ PublicKey     := ; DER-encoded public key
 RelTime       := 1* OCTET ; msec
 ReturnCode    := ; see Section 10.2
 SigTime       := AbsTime
+\end{verbatim}
+\end{figure}
 
 \subsection{Consumer Behavior}
 To request a piece of content for a given {Name, [KeyIdRest],
@@ -444,9 +444,15 @@ A forwarder routes Interest messages based on a Forwarding
 Information Base (FIB), returns Content Objects that match Interests
 to the Interest's previous hop, and processes InterestReturn control
 messages.  It may also keep a cache of Content Objects in the
-notional Content Store table.  This document does not specify the
-internal behavior of a forwarder -- only these and other external
-behaviors.
+notional Content Store table.  These functions are shown in Figure \ref{fig:datapath}.
+These and other external behaviors are described in the remainder of this section.
+
+\begin{figure}
+\center
+\includegraphics[scale=0.5]{Figures/ccn_datapath}
+\caption{The CCN forwarder data path}
+\label{fig:datapath}
+\end{figure}
 
 In this document, we will use two processing pipelines, one for
 Interests and one for Content Objects.  Interest processing is made
@@ -640,28 +646,18 @@ level.  An Interest routing protocol, for example, may only allow
 binary name segments.  A load balancer or compute cluster may route
 through additional component types, depending on their services.
 
-+-------------+-----------------------------------------------------+
-|     Name    | Description                                         |
-+-------------+-----------------------------------------------------+
-|     Name    | A generic name segment that includes arbitrary      |
-|   Segment   | octets.                                             |
-|             |                                                     |
-|   Interest  | An octet string that identifies the payload carried |
-|  Payload ID | in an Interest. As an example, the Payload ID might |
-|             | be a hash of the Interest Payload.  This provides a |
-|             | way to differentiate between Interests based on the |
-|             | Payload solely through a Name Segment without       |
-|             | having to include all the extra bytes of the        |
-|             | payload itself.                                     |
-|             |                                                     |
-| Application | An application-specific payload in a name segment.  |
-|  Components | An application may apply its own semantics to these |
-|             | components.  A good practice is to identify the     |
-|             | application in a Name segment prior to the          |
-|             | application component segments.                     |
-+-------------+-----------------------------------------------------+
-
-                 Table 1: CCNx Name Segment Types
+\begin{table}[t!]
+\center
+\caption{CCNx Name Segment Types}
+\begin{tabular}{|p{5cm}|p{9cm}|} \hline
+{\bf Name} & {\bf Description} \\ \hline
+Name Segment & A generic name segment that includes arbitrary octets. \\
+Interest Payload ID & An octet string that identifies the payload carried in an Interest. As an example, the Payload ID might be a hash of the Interest Payload.
+This provides a way to differentiate between Interests based on the Payload solely through a Name Segment without having to include all the extra bytes of the payload itself. \\
+Application Components &  An application-specific payload in a name segment. An application may apply its own semantics to these components. A good practice is to identify the
+application in a Name segment prior to the application component segments. \\ \hline
+\end{tabular}
+\end{table}
 
 At the lowest level, a Forwarder does not need to understand the
 semantics of name segments; it need only identify name segment
@@ -672,21 +668,16 @@ against its forwarding table to determine a next hop.
 \subsection{Name Examples}
 This section uses the CCNx URI [CCNxURI] representation of CCNx names.
 
-+--------------------------+----------------------------------------+
-|           Name           | Description                            |
-+--------------------------+----------------------------------------+
-|          ccnx:/          | A 0-length name, corresponds to a      |
-|                          | default route.                         |
-|                          |                                        |
-|       ccnx:/NAME=        | A name with 1 segment of 0 length,     |
-|                          | distinct from ccnx:/.                  |
-|                          |                                        |
-| ccnx:/NAME=foo/APP:0=bar | A 2-segment name, where the first      |
-|                          | segment is of type NAME and the second |
-|                          | segment is of type APP:0.              |
-+--------------------------+----------------------------------------+
-
-                     Table 2: CCNx Name Examples
+\begin{table}[t!]
+\center
+\caption{CCNx Name Examples}
+\begin{tabular}{|p{5cm}|p{9cm}|} \hline
+{\bf Name} & {\bf Description} \\ \hline
+ccnx:/ & A 0-length name, corresponds to a default route. \\
+ccnx:/NAME= & A name with 1 segment of 0 length, distinct from ccnx:/. \\
+ccnx:/NAME=foo/APP:0=bar & A 2-segment name, where the first segment is of type NAME and the second segment is of type APP:0. \\ \hline
+\end{tabular}
+\end{table}
 
 \subsection{Interest Payload ID}
 An Interest may also have a Payload which carries state about the
