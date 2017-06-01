@@ -18,18 +18,12 @@
 \setcounter{tocdepth}{5}
 \setcounter{secnumdepth}{5}
 
-%-------------------------------------------------------------------------------
-% HEADER & FOOTER
-%-------------------------------------------------------------------------------
 \pagestyle{fancy}
 \fancyhf{}
 \setlength\headheight{15pt}
 % \fancyhead[L]{Student ID: 1034511}
 % \fancyhead[R]{Anglia Ruskin University}
 % \fancyfoot[R]{Page \thepage\ of \pageref{LastPage}}
-%-------------------------------------------------------------------------------
-% TITLE PAGE
-%-------------------------------------------------------------------------------
 
 \begin{document}
 
@@ -39,19 +33,13 @@
 
 \date{\today \\ Version: 1.0}
 
-\author{
-        Christopher A. Wood \\
+\author{Christopher A. Wood \\
         University of California Irvine \\
-        woodc1@uci.edu }
+        woodc1@uci.edu}
 
 \maketitle
 \tableofcontents
 \newpage
-
-%-------------------------------------------------------------------------------
-% Section title formatting
-% \sectionfont{\scshape}
-%-------------------------------------------------------------------------------
 
 \section{Overview}
 CCNx is a request and response protocol to fetch chunks of data using
@@ -117,12 +105,11 @@ application data, a cryptographic key, etc.) or cache control
 directives, etc.  We will call this extra signaling information
 ExtraFields.
 
-A named payload is thus the tuple
-
+A named payload is thus the nested tuple
 $$
-((Name, ExtraFields, Payload, ValidationAlgorithm), ValidationPayload),
+((\mathsf{Name}, \mathsf{ExtraFields}, \mathsf{Payload}, \mathsf{ValidationAlgorithm}), \mathsf{ValidationPayload}),
 $$
-where all fields in the inner tuple are covered by the validation algorithm.
+where all fields in the inner tuple are covered by the value in the validation payload.
 
 CCNx specifies a network protocol around Interests (request messages)
 and Content Objects (response messages) to move named payloads. An
@@ -332,11 +319,9 @@ SigTime       := AbsTime
 
 \subsection{Consumer Behavior}
 To request a piece of content for a given
-
 $$
-(Name, [KeyIdRest], [ObjHashRestr])
+(\mathsf{Name}, [\mathsf{KeyIdRest}], [\mathsf{ObjHashRestr}])
 $$
-
 tuple, a consumer creates an Interest message with
 those values.  It MAY add a validation section, typically only a
 CRC32C.  A consumer MAY put a Payload field in an Interest to send
@@ -474,13 +459,11 @@ Interests in the PIT and forwarding to those previous hops.
 Interest looping is not prevented in CCNx.  An Interest traversing
 loops is eventually discarded using the hop-limit field of the
 Interest, which is decremented at each hop traversed by the Interest.
-
 Every Interest MUST carry a HopLimit.
 
 When an Interest is received from another forwarder, the HopLimit
 MUST be positive.  A forwarder MUST decement the HopLimit of an
 Interest by at least 1 before it is forwarded.
-
 If the HopLimit equals 0, the Interest MUST NOT be forwarded to
 another forwarder; it MAY be sent to a publisher application or
 serviced from a local Content Store.
@@ -748,15 +731,21 @@ only be used within a trusted domain.  The header SHOULD be removed
 when crossing a trust boundary.
 
 \subsection{Key ID Restriction}
-\todo[inline]{Write me.}
+In addition to content restrictions, CCNx allows an Interest to also
+restrict a response to a content object
+which can be authenticated using a specific public key. This is done by
+specifying the identity of the verifying public key in a header (KeyIdRestr)
+that is carried through the network. An Interest with a KeyIdRestr only matches a
+Content Object if the latter carries a public key whose identity matches the
+KeyIdRestr value. An Interest may carry both a content object hash restriction
+and a key ID restriction. The former simply subsumes the latter since, by design,
+the public key in a matching Content Object would be included in the hash computation input.
 
 \section{Link}
 A Link is the tuple
-
 $$
-{Name, [KeyIdRestr], [ContentObjectHashRestr]}.
+{\mathsf{Name}, [\mathsf{KeyIdRestr}], [\mathsf{ContentObjectHashRestr}]}.
 $$
-
 The information in a Link comprises the fields the fields of an
 Interest which would retrieve the Link target.  A Content Object with
 PayloadType = "Link" is an object whose payload is one or more Links.
@@ -930,43 +919,6 @@ Malformed Interest & The Interest was dropped beause it did not correctly parse.
 \end{tabular}
 \end{table}
 
-% +----------------------+--------------------------------------------+
-% | Name                 | Description                                |
-% +----------------------+--------------------------------------------+
-% | No Route (Section    | The returning Forwarder has no route to    |
-% | 10.3.1)              | the Interest name.                         |
-% |                      |                                            |
-% | HopLimit Exceeded    | The HopLimit has decremented to 0 and need |
-% | (Section 10.3.2)     | to forward the packet.                     |
-% |                      |                                            |
-% | Interest MTU too     | The Interest's MTU does not conform to the |
-% | large (Section       | required minimum and would require         |
-% | 10.3.3)              | fragmentation.                             |
-% |                      |                                            |
-% | No Resources         | The node does not have the resources to    |
-% | (Section 10.3.4)     | process the Interest.                      |
-% |                      |                                            |
-% | Path error (Section  | There was a transmission error when        |
-% | 10.3.5)              | forwarding the Interest along a route (a   |
-% |                      | transient error).                          |
-% |                      |                                            |
-% | Prohibited (Section  | An administrative setting prohibits        |
-% | 10.3.6)              | processing this Interest.                  |
-% |                      |                                            |
-% | Congestion (Section  | The Interest was dropped due to congestion |
-% | 10.3.7)              | (a transient error).                       |
-% |                      |                                            |
-% | Unsupported Content  | The Interest was dropped because it        |
-% | Object Hash          | requested a Content Object Hash            |
-% | Algorithm (Section   | Restriction using a hash algorithm that    |
-% | 10.3.8)              | cannot be computed.                        |
-% |                      |                                            |
-% | Malformed Interest   | The Interest was dropped because it did    |
-% | (Section 10.3.9)     | not correctly parse.                       |
-% +----------------------+--------------------------------------------+
-%
-%                 Table 3: Interest Return Reason Codes
-
 \subsection{Interest Return Protocol}
 This section describes the Forwarder behavior for the various Reason
 codes for Interest Return.  A Forwarder is not required to generate
@@ -1076,8 +1028,5 @@ validate the entire structure of an Interest.
 
 \bibliographystyle{unsrt}
 \bibliography{references}
-
-% \appendix
-%%% XXX: message format
 
 \end{document}
